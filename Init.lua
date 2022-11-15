@@ -2,7 +2,7 @@ local Library;
 
 local Success, Error = pcall(function()
     local Response = syn.request({
-        Url = "https://raw.githubusercontent.com/6ce/UI-Lib/main/Main.lua",
+        Url = "https://raw.githubusercontent.com/6ce/UI-Lib/main/Source.lua",
         Method = "GET"
     })
     
