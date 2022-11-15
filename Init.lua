@@ -15,7 +15,7 @@ end
 
 Library:MakeNotification({
     Name = "MAGNET",
-    Contet = "m_gnet was here",
+    Content = "m_gnet was here",
     Time = 3
 })
 
