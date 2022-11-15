@@ -10,7 +10,7 @@ local Success, Error = pcall(function()
 end)
 
 if Error then
-    return warn("MagHub error: " .. Error)
+    return warn("Orion Init error: " .. Error)
 end
 
 Library:MakeNotification({
