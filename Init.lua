@@ -19,4 +19,4 @@ Library:MakeNotification({
     Time = 3
 })
 
-return Library
+return Library, type(Library)
