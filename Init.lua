@@ -10,7 +10,7 @@ local Success, Error = pcall(function()
 end)
 
 if Error then
-    return warn("UI Lib Init error: " .. Error)
+    return warn("UI-Lib Init error: " .. Error)
 end
 
 Library:MakeNotification({
