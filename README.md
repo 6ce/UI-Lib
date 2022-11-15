@@ -9,7 +9,7 @@ local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/6ce/
 
 ## Creating a Window
 ```lua
-local Window = Library:MakeWindow({Name = "Title of the library", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
+local Window = Library:MakeWindow({Name = "Title of the library", HidePremium = false, SaveConfig = true, ConfigFolder = "LibTest"})
 
 --[[
 Name = <string> - The name of the UI.
