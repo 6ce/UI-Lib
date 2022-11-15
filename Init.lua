@@ -6,7 +6,7 @@ local Success, Error = pcall(function()
         Method = "GET"
     })
     
-    Library = loadstring(Response.Body)
+    Library = loadstring(Response.Body)()
 end)
 
 if Error then
