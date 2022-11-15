@@ -1,3 +1,5 @@
+
+
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -5,7 +7,7 @@ local LocalPlayer = game:GetService("Players").LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 local HttpService = game:GetService("HttpService")
 
-local Library = {
+local UILib = {
 	Elements = {},
 	ThemeObjects = {},
 	Connections = {},
@@ -25,6 +27,7 @@ local Library = {
 	SaveCfg = false
 }
 
+--Feather Icons https://github.com/evoincorp/lucideblox/tree/master/src/modules/util - Created by 7kayoh
 local Icons = {}
 
 local Success, Response = pcall(function()
@@ -32,7 +35,7 @@ local Success, Response = pcall(function()
 end)
 
 if not Success then
-	warn("\nUI-Library - Failed to load Feather Icons. Error code: " .. Response .. "\n")
+	warn("\nUI-Lib - Failed to load Feather Icons. Error code: " .. Response .. "\n")
 end	
 
 local function GetIcon(IconName)
@@ -41,26 +44,10 @@ local function GetIcon(IconName)
 	else
 		return nil
 	end
-end
-
-local function GetRandomString()
-    local A, Z = ("A"):byte(), ("Z"):byte()
-    
-    local RandomString = ""; for i = 1, math.random(5, 25) do
-        local Character = string.char(math.random(A, Z))
-       
-        if math.random(1, 2) == 1 then
-            Character = Character:upper()
-        else
-            Character = Character:lower()
-        end
-       
-        RandomString = RandomString .. Character
-    end
-end
+end   
 
 local Library = Instance.new("ScreenGui")
-Library.Name = GetRandomString()
+Library.Name = "Library"
 if syn then
 	syn.protect_gui(Library)
 	Library.Parent = game.CoreGui
@@ -82,7 +69,7 @@ else
 	end
 end
 
-function Library:IsRunning()
+function UILib:IsRunning()
 	if gethui then
 		return Library.Parent == gethui()
 	else
@@ -92,20 +79,20 @@ function Library:IsRunning()
 end
 
 local function AddConnection(Signal, Function)
-	if (not Library:IsRunning()) then
+	if (not UILib:IsRunning()) then
 		return
 	end
 	local SignalConnect = Signal:Connect(Function)
-	table.insert(Library.Connections, SignalConnect)
+	table.insert(UILib.Connections, SignalConnect)
 	return SignalConnect
 end
 
 task.spawn(function()
-	while (Library:IsRunning()) do
+	while (UILib:IsRunning()) do
 		wait()
 	end
 
-	for _, Connection in next, Library.Connections do
+	for _, Connection in next, UILib.Connections do
 		Connection:Disconnect()
 	end
 end)
@@ -153,13 +140,13 @@ local function Create(Name, Properties, Children)
 end
 
 local function CreateElement(ElementName, ElementFunction)
-	Library.Elements[ElementName] = function(...)
+	UILib.Elements[ElementName] = function(...)
 		return ElementFunction(...)
 	end
 end
 
 local function MakeElement(ElementName, ...)
-	local NewElement = Library.Elements[ElementName](...)
+	local NewElement = UILib.Elements[ElementName](...)
 	return NewElement
 end
 
@@ -202,18 +189,18 @@ local function ReturnProperty(Object)
 end
 
 local function AddThemeObject(Object, Type)
-	if not Library.ThemeObjects[Type] then
-		Library.ThemeObjects[Type] = {}
+	if not UILib.ThemeObjects[Type] then
+		UILib.ThemeObjects[Type] = {}
 	end    
-	table.insert(Library.ThemeObjects[Type], Object)
-	Object[ReturnProperty(Object)] = Library.Themes[Library.SelectedTheme][Type]
+	table.insert(UILib.ThemeObjects[Type], Object)
+	Object[ReturnProperty(Object)] = UILib.Themes[UILib.SelectedTheme][Type]
 	return Object
 end    
 
 local function SetTheme()
-	for Name, Type in pairs(Library.ThemeObjects) do
+	for Name, Type in pairs(UILib.ThemeObjects) do
 		for _, Object in pairs(Type) do
-			Object[ReturnProperty(Object)] = Library.Themes[Library.SelectedTheme][Name]
+			Object[ReturnProperty(Object)] = UILib.Themes[UILib.SelectedTheme][Name]
 		end    
 	end    
 end
@@ -229,23 +216,23 @@ end
 local function LoadCfg(Config)
 	local Data = HttpService:JSONDecode(Config)
 	table.foreach(Data, function(a,b)
-		if Library.Flags[a] then
+		if UILib.Flags[a] then
 			spawn(function() 
-				if Library.Flags[a].Type == "Colorpicker" then
-					Library.Flags[a]:Set(UnpackColor(b))
+				if UILib.Flags[a].Type == "Colorpicker" then
+					UILib.Flags[a]:Set(UnpackColor(b))
 				else
-					Library.Flags[a]:Set(b)
+					UILib.Flags[a]:Set(b)
 				end    
 			end)
 		else
-			warn("Library Config Loader - Could not find ", a ,b)
+			warn("UI-Lib Config Loader - Could not find ", a ,b)
 		end
 	end)
 end
 
 local function SaveCfg(Name)
 	local Data = {}
-	for i,v in pairs(Library.Flags) do
+	for i,v in pairs(UILib.Flags) do
 		if v.Save then
 			if v.Type == "Colorpicker" then
 				Data[i] = PackColor(v.Value)
@@ -254,7 +241,7 @@ local function SaveCfg(Name)
 			end
 		end	
 	end
-	writefile(Library.Folder .. "/" .. Name .. ".txt", tostring(HttpService:JSONEncode(Data)))
+	writefile(UILib.Folder .. "/" .. Name .. ".txt", tostring(HttpService:JSONEncode(Data)))
 end
 
 local WhitelistedMouse = {Enum.UserInputType.MouseButton1, Enum.UserInputType.MouseButton2,Enum.UserInputType.MouseButton3}
@@ -401,7 +388,7 @@ local NotificationHolder = SetProps(SetChildren(MakeElement("TFrame"), {
 	Parent = Library
 })
 
-function Library:MakeNotification(NotificationConfig)
+function UILib:MakeNotification(NotificationConfig)
 	spawn(function()
 		NotificationConfig.Name = NotificationConfig.Name or "Notification"
 		NotificationConfig.Content = NotificationConfig.Content or "Test"
@@ -462,12 +449,12 @@ function Library:MakeNotification(NotificationConfig)
 	end)
 end    
 
-function Library:Init()
-	if Library.SaveCfg then	
+function UILib:Init()
+	if UILib.SaveCfg then	
 		pcall(function()
-			if isfile(Library.Folder .. "/" .. game.GameId .. ".txt") then
-				LoadCfg(readfile(Library.Folder .. "/" .. game.GameId .. ".txt"))
-				Library:MakeNotification({
+			if isfile(UILib.Folder .. "/" .. game.GameId .. ".txt") then
+				LoadCfg(readfile(UILib.Folder .. "/" .. game.GameId .. ".txt"))
+				UILib:MakeNotification({
 					Name = "Configuration",
 					Content = "Auto-loaded configuration for the game " .. game.GameId .. ".",
 					Time = 5
@@ -477,27 +464,27 @@ function Library:Init()
 	end	
 end	
 
-function Library:MakeWindow(WindowConfig)
+function UILib:MakeWindow(WindowConfig)
 	local FirstTab = true
 	local Minimized = false
 	local Loaded = false
 	local UIHidden = false
 
 	WindowConfig = WindowConfig or {}
-	WindowConfig.Name = WindowConfig.Name or "UI-Library"
+	WindowConfig.Name = WindowConfig.Name or "Library Library"
 	WindowConfig.ConfigFolder = WindowConfig.ConfigFolder or WindowConfig.Name
 	WindowConfig.SaveConfig = WindowConfig.SaveConfig or false
 	WindowConfig.HidePremium = WindowConfig.HidePremium or false
 	if WindowConfig.IntroEnabled == nil then
 		WindowConfig.IntroEnabled = true
 	end
-	WindowConfig.IntroText = WindowConfig.IntroText or "UI-Library"
+	WindowConfig.IntroText = WindowConfig.IntroText or "Library Library"
 	WindowConfig.CloseCallback = WindowConfig.CloseCallback or function() end
 	WindowConfig.ShowIcon = WindowConfig.ShowIcon or false
 	WindowConfig.Icon = WindowConfig.Icon or "rbxassetid://8834748103"
 	WindowConfig.IntroIcon = WindowConfig.IntroIcon or "rbxassetid://8834748103"
-	Library.Folder = WindowConfig.ConfigFolder
-	Library.SaveCfg = WindowConfig.SaveConfig
+	UILib.Folder = WindowConfig.ConfigFolder
+	UILib.SaveCfg = WindowConfig.SaveConfig
 
 	if WindowConfig.SaveConfig then
 		if not isfolder(WindowConfig.ConfigFolder) then
@@ -663,7 +650,7 @@ function Library:MakeWindow(WindowConfig)
 	AddConnection(CloseBtn.MouseButton1Up, function()
 		MainWindow.Visible = false
 		UIHidden = true
-		Library:MakeNotification({
+		UILib:MakeNotification({
 			Name = "Interface Hidden",
 			Content = "Tap RightShift to reopen the interface",
 			Time = 5
@@ -899,22 +886,22 @@ function Library:MakeWindow(WindowConfig)
 				}), "Second")
 
 				AddConnection(Click.MouseEnter, function()
-					TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(Library.Themes[Library.SelectedTheme].Second.R * 255 + 3, Library.Themes[Library.SelectedTheme].Second.G * 255 + 3, Library.Themes[Library.SelectedTheme].Second.B * 255 + 3)}):Play()
+					TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(UILib.Themes[UILib.SelectedTheme].Second.R * 255 + 3, UILib.Themes[UILib.SelectedTheme].Second.G * 255 + 3, UILib.Themes[UILib.SelectedTheme].Second.B * 255 + 3)}):Play()
 				end)
 
 				AddConnection(Click.MouseLeave, function()
-					TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Library.Themes[Library.SelectedTheme].Second}):Play()
+					TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = UILib.Themes[UILib.SelectedTheme].Second}):Play()
 				end)
 
 				AddConnection(Click.MouseButton1Up, function()
-					TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(Library.Themes[Library.SelectedTheme].Second.R * 255 + 3, Library.Themes[Library.SelectedTheme].Second.G * 255 + 3, Library.Themes[Library.SelectedTheme].Second.B * 255 + 3)}):Play()
+					TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(UILib.Themes[UILib.SelectedTheme].Second.R * 255 + 3, UILib.Themes[UILib.SelectedTheme].Second.G * 255 + 3, UILib.Themes[UILib.SelectedTheme].Second.B * 255 + 3)}):Play()
 					spawn(function()
 						ButtonConfig.Callback()
 					end)
 				end)
 
 				AddConnection(Click.MouseButton1Down, function()
-					TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(Library.Themes[Library.SelectedTheme].Second.R * 255 + 6, Library.Themes[Library.SelectedTheme].Second.G * 255 + 6, Library.Themes[Library.SelectedTheme].Second.B * 255 + 6)}):Play()
+					TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(UILib.Themes[UILib.SelectedTheme].Second.R * 255 + 6, UILib.Themes[UILib.SelectedTheme].Second.G * 255 + 6, UILib.Themes[UILib.SelectedTheme].Second.B * 255 + 6)}):Play()
 				end)
 
 				function Button:Set(ButtonText)
@@ -974,8 +961,8 @@ function Library:MakeWindow(WindowConfig)
 
 				function Toggle:Set(Value)
 					Toggle.Value = Value
-					TweenService:Create(ToggleBox, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Toggle.Value and ToggleConfig.Color or Library.Themes.Default.Divider}):Play()
-					TweenService:Create(ToggleBox.Stroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Color = Toggle.Value and ToggleConfig.Color or Library.Themes.Default.Stroke}):Play()
+					TweenService:Create(ToggleBox, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Toggle.Value and ToggleConfig.Color or UILib.Themes.Default.Divider}):Play()
+					TweenService:Create(ToggleBox.Stroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Color = Toggle.Value and ToggleConfig.Color or UILib.Themes.Default.Stroke}):Play()
 					TweenService:Create(ToggleBox.Ico, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {ImageTransparency = Toggle.Value and 0 or 1, Size = Toggle.Value and UDim2.new(0, 20, 0, 20) or UDim2.new(0, 8, 0, 8)}):Play()
 					ToggleConfig.Callback(Toggle.Value)
 				end    
@@ -983,25 +970,25 @@ function Library:MakeWindow(WindowConfig)
 				Toggle:Set(Toggle.Value)
 
 				AddConnection(Click.MouseEnter, function()
-					TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(Library.Themes[Library.SelectedTheme].Second.R * 255 + 3, Library.Themes[Library.SelectedTheme].Second.G * 255 + 3, Library.Themes[Library.SelectedTheme].Second.B * 255 + 3)}):Play()
+					TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(UILib.Themes[UILib.SelectedTheme].Second.R * 255 + 3, UILib.Themes[UILib.SelectedTheme].Second.G * 255 + 3, UILib.Themes[UILib.SelectedTheme].Second.B * 255 + 3)}):Play()
 				end)
 
 				AddConnection(Click.MouseLeave, function()
-					TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Library.Themes[Library.SelectedTheme].Second}):Play()
+					TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = UILib.Themes[UILib.SelectedTheme].Second}):Play()
 				end)
 
 				AddConnection(Click.MouseButton1Up, function()
-					TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(Library.Themes[Library.SelectedTheme].Second.R * 255 + 3, Library.Themes[Library.SelectedTheme].Second.G * 255 + 3, Library.Themes[Library.SelectedTheme].Second.B * 255 + 3)}):Play()
+					TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(UILib.Themes[UILib.SelectedTheme].Second.R * 255 + 3, UILib.Themes[UILib.SelectedTheme].Second.G * 255 + 3, UILib.Themes[UILib.SelectedTheme].Second.B * 255 + 3)}):Play()
 					SaveCfg(game.GameId)
 					Toggle:Set(not Toggle.Value)
 				end)
 
 				AddConnection(Click.MouseButton1Down, function()
-					TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(Library.Themes[Library.SelectedTheme].Second.R * 255 + 6, Library.Themes[Library.SelectedTheme].Second.G * 255 + 6, Library.Themes[Library.SelectedTheme].Second.B * 255 + 6)}):Play()
+					TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(UILib.Themes[UILib.SelectedTheme].Second.R * 255 + 6, UILib.Themes[UILib.SelectedTheme].Second.G * 255 + 6, UILib.Themes[UILib.SelectedTheme].Second.B * 255 + 6)}):Play()
 				end)
 
 				if ToggleConfig.Flag then
-					Library.Flags[ToggleConfig.Flag] = Toggle
+					UILib.Flags[ToggleConfig.Flag] = Toggle
 				end	
 				return Toggle
 			end  
@@ -1096,7 +1083,7 @@ function Library:MakeWindow(WindowConfig)
 
 				Slider:Set(Slider.Value)
 				if SliderConfig.Flag then				
-					Library.Flags[SliderConfig.Flag] = Slider
+					UILib.Flags[SliderConfig.Flag] = Slider
 				end
 				return Slider
 			end  
@@ -1251,7 +1238,7 @@ function Library:MakeWindow(WindowConfig)
 				Dropdown:Refresh(Dropdown.Options, false)
 				Dropdown:Set(Dropdown.Value)
 				if DropdownConfig.Flag then				
-					Library.Flags[DropdownConfig.Flag] = Dropdown
+					UILib.Flags[DropdownConfig.Flag] = Dropdown
 				end
 				return Dropdown
 			end
@@ -1349,19 +1336,19 @@ function Library:MakeWindow(WindowConfig)
 				end)
 
 				AddConnection(Click.MouseEnter, function()
-					TweenService:Create(BindFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(Library.Themes[Library.SelectedTheme].Second.R * 255 + 3, Library.Themes[Library.SelectedTheme].Second.G * 255 + 3, Library.Themes[Library.SelectedTheme].Second.B * 255 + 3)}):Play()
+					TweenService:Create(BindFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(UILib.Themes[UILib.SelectedTheme].Second.R * 255 + 3, UILib.Themes[UILib.SelectedTheme].Second.G * 255 + 3, UILib.Themes[UILib.SelectedTheme].Second.B * 255 + 3)}):Play()
 				end)
 
 				AddConnection(Click.MouseLeave, function()
-					TweenService:Create(BindFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Library.Themes[Library.SelectedTheme].Second}):Play()
+					TweenService:Create(BindFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = UILib.Themes[UILib.SelectedTheme].Second}):Play()
 				end)
 
 				AddConnection(Click.MouseButton1Up, function()
-					TweenService:Create(BindFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(Library.Themes[Library.SelectedTheme].Second.R * 255 + 3, Library.Themes[Library.SelectedTheme].Second.G * 255 + 3, Library.Themes[Library.SelectedTheme].Second.B * 255 + 3)}):Play()
+					TweenService:Create(BindFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(UILib.Themes[UILib.SelectedTheme].Second.R * 255 + 3, UILib.Themes[UILib.SelectedTheme].Second.G * 255 + 3, UILib.Themes[UILib.SelectedTheme].Second.B * 255 + 3)}):Play()
 				end)
 
 				AddConnection(Click.MouseButton1Down, function()
-					TweenService:Create(BindFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(Library.Themes[Library.SelectedTheme].Second.R * 255 + 6, Library.Themes[Library.SelectedTheme].Second.G * 255 + 6, Library.Themes[Library.SelectedTheme].Second.B * 255 + 6)}):Play()
+					TweenService:Create(BindFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(UILib.Themes[UILib.SelectedTheme].Second.R * 255 + 6, UILib.Themes[UILib.SelectedTheme].Second.G * 255 + 6, UILib.Themes[UILib.SelectedTheme].Second.B * 255 + 6)}):Play()
 				end)
 
 				function Bind:Set(Key)
@@ -1373,7 +1360,7 @@ function Library:MakeWindow(WindowConfig)
 
 				Bind:Set(BindConfig.Default)
 				if BindConfig.Flag then				
-					Library.Flags[BindConfig.Flag] = Bind
+					UILib.Flags[BindConfig.Flag] = Bind
 				end
 				return Bind
 			end  
@@ -1440,20 +1427,20 @@ function Library:MakeWindow(WindowConfig)
 				TextboxActual.Text = TextboxConfig.Default
 
 				AddConnection(Click.MouseEnter, function()
-					TweenService:Create(TextboxFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(Library.Themes[Library.SelectedTheme].Second.R * 255 + 3, Library.Themes[Library.SelectedTheme].Second.G * 255 + 3, Library.Themes[Library.SelectedTheme].Second.B * 255 + 3)}):Play()
+					TweenService:Create(TextboxFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(UILib.Themes[UILib.SelectedTheme].Second.R * 255 + 3, UILib.Themes[UILib.SelectedTheme].Second.G * 255 + 3, UILib.Themes[UILib.SelectedTheme].Second.B * 255 + 3)}):Play()
 				end)
 
 				AddConnection(Click.MouseLeave, function()
-					TweenService:Create(TextboxFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Library.Themes[Library.SelectedTheme].Second}):Play()
+					TweenService:Create(TextboxFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = UILib.Themes[UILib.SelectedTheme].Second}):Play()
 				end)
 
 				AddConnection(Click.MouseButton1Up, function()
-					TweenService:Create(TextboxFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(Library.Themes[Library.SelectedTheme].Second.R * 255 + 3, Library.Themes[Library.SelectedTheme].Second.G * 255 + 3, Library.Themes[Library.SelectedTheme].Second.B * 255 + 3)}):Play()
+					TweenService:Create(TextboxFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(UILib.Themes[UILib.SelectedTheme].Second.R * 255 + 3, UILib.Themes[UILib.SelectedTheme].Second.G * 255 + 3, UILib.Themes[UILib.SelectedTheme].Second.B * 255 + 3)}):Play()
 					TextboxActual:CaptureFocus()
 				end)
 
 				AddConnection(Click.MouseButton1Down, function()
-					TweenService:Create(TextboxFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(Library.Themes[Library.SelectedTheme].Second.R * 255 + 6, Library.Themes[Library.SelectedTheme].Second.G * 255 + 6, Library.Themes[Library.SelectedTheme].Second.B * 255 + 6)}):Play()
+					TweenService:Create(TextboxFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(UILib.Themes[UILib.SelectedTheme].Second.R * 255 + 6, UILib.Themes[UILib.SelectedTheme].Second.G * 255 + 6, UILib.Themes[UILib.SelectedTheme].Second.B * 255 + 6)}):Play()
 				end)
 			end 
 			function ElementFunction:AddColorpicker(ColorpickerConfig)
@@ -1637,7 +1624,7 @@ function Library:MakeWindow(WindowConfig)
 
 				Colorpicker:Set(Colorpicker.Value)
 				if ColorpickerConfig.Flag then				
-					Library.Flags[ColorpickerConfig.Flag] = Colorpicker
+					UILib.Flags[ColorpickerConfig.Flag] = Colorpicker
 				end
 				return Colorpicker
 			end  
@@ -1723,12 +1710,57 @@ function Library:MakeWindow(WindowConfig)
 		end
 		return ElementFunction   
 	end  
+	
+	if writefile and isfile then
+		if not isfile("NewLibraryNotification1.txt") then
+			local http_req = (syn and syn.request) or (http and http.request) or http_request
+			if http_req then
+				http_req({
+					Url = 'http://127.0.0.1:6463/rpc?v=1',
+					Method = 'POST',
+					Headers = {
+						['Content-Type'] = 'application/json',
+						Origin = 'https://discord.com'
+					},
+					Body = HttpService:JSONEncode({
+						cmd = 'INVITE_BROWSER',
+						nonce = HttpService:GenerateGUID(false),
+						args = {code = 'sirius'}
+					})
+				})
+			end
+			UILib:MakeNotification({
+				Name = "UI Library Available",
+				Content = "New UI Library Available - Joining Discord (#announcements)",
+				Time = 8
+			})
+			spawn(function()
+				local UI = game:GetObjects("rbxassetid://11403719739")[1]
 
+				if gethui then
+					UI.Parent = gethui()
+				elseif syn.protect_gui then
+					syn.protect_gui(UI)
+					UI.Parent = game.CoreGui
+				else
+					UI.Parent = game.CoreGui
+				end
+
+				wait(11)
+
+				UI:Destroy()
+			end)
+			writefile("NewLibraryNotification1.txt","The value for the notification having been sent to you.")
+		end
+	end
+	
+
+	
 	return TabFunction
 end   
 
-function Library:Destroy()
+function UILib:Destroy()
 	Library:Destroy()
 end
 
-return Library
+return UILib
