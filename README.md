@@ -2,7 +2,7 @@
 
 ## Booting the Library
 ```lua
-local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/6ce/UI-Lib/main/Init.lua')))()
 ```
 
 
