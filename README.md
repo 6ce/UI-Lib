@@ -2,7 +2,7 @@
 
 ## Booting the Library
 ```lua
-local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/6ce/UI-Lib/main/Init.lua')))()
+local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/6ce/UI-Lib/main/Initialize.lua')))()
 ```
 
 
